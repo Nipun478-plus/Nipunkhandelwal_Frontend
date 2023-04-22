@@ -26,70 +26,72 @@ The PropTypes for the items prop in the WrappedListComponent component are not d
 Ques:- Please fix, optimize, and/or modify the component as much as you think is necessary.
 Ans:- So here is optimize version of the code :-
 
-
-
-import React, { useState, useEffect, memo } from "react";
-import PropTypes from "prop-types";
+import React, { useState, useEffect, useCallback } from 'react';
+import PropTypes from 'prop-types';
 
 // Single List Item
-const WrappedSingleListItem = ({ index, isSelected, onClickHandler, text }) => {
+const SingleListItem = ({
+index,
+isSelected,
+onClickHandler,
+text,
+}) => {
 return (
 <li
-style={{ backgroundColor: isSelected ? "yellow" : "green" }}
-onClick={onClickHandler(index)}
+style={{ backgroundColor: isSelected === index ? 'green' : 'red'}}
+onClick={() => onClickHandler(index)}
 >
 {text}
 </li>
 );
 };
 
-WrappedSingleListItem.propTypes = {
-index: PropTypes.number,
-isSelected: PropTypes.bool,
+SingleListItem.propTypes = {
+index: PropTypes.number.isRequired,
+isSelected: PropTypes.number,
 onClickHandler: PropTypes.func.isRequired,
 text: PropTypes.string.isRequired,
 };
 
-const SingleListItem = memo(WrappedSingleListItem);
-
 // List Component
-const WrappedListComponent = ({ items }) => {
-const [selectedIndex, setSelectedIndex] = useState();
+const List = ({ items }) => {
+const [selectedIndex, setSelectedIndex] = useState(null);
 
 useEffect(() => {
-	setSelectedIndex(null);
+setSelectedIndex(null);
 }, [items]);
 
-const handleClick = (index) => {
-	setSelectedIndex(index);
-};
+const handleClick = useCallback(
+(index) => {
+setSelectedIndex(index);
+},
+[setSelectedIndex]
+);
 
 return (
-	<ul style={{ textAlign: "left" }}>
-		{items.map((item, index) => (
-			<SingleListItem
-				onClickHandler={() => handleClick(index)}
-				text={item.text}
-				index={index}
-				isSelected={selectedIndex}
-			/>
-		))}
-	</ul>
-);
+<ul style={{ textAlign: 'left' }}>
+{items.map((item, index) => (
+<SingleListItem
+key={index}
+{...item}
+onClickHandler={handleClick}
+index={index}
+isSelected={selectedIndex}
+/>
+))}
+</ul>
+)
 };
 
-WrappedListComponent.propTypes = {
-items: PropTypes.arrayOf(
-PropTypes.shape({
+List.propTypes = {
+items: PropTypes.arrayOf(PropTypes.shape({
 text: PropTypes.string.isRequired,
-})
-),
+})),
 };
 
-WrappedListComponent.defaultProps = {
-items: [{text: "Adarsh", index:1}, {text: "12013252", index: 2}],
+List.defaultProps = {
+items: null,
 };
-
-const List = memo(WrappedListComponent);
 
 export default List;
+
